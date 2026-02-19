@@ -1,0 +1,35 @@
+{
+  "CYP2D6": {
+    "*4": {
+      "phenotype": "Poor Metabolizer",
+      "drugs": {
+        "CODEINE": {
+          "risk_level": "Ineffective",
+          "recommendation": "Avoid codeine. Lack of efficacy due to inability to convert to active metabolite (morphine)."
+        }
+      }
+    }
+  },
+  "CYP2C19": {
+    "*17": {
+      "phenotype": "Ultra-rapid Metabolizer",
+      "drugs": {
+        "CLOPIDOGREL": {
+          "risk_level": "Adjust Dosage",
+          "recommendation": "Monitor closely. Patient may have increased bleeding risk with standard dosage."
+        }
+      }
+    }
+  },
+  "SLCO1B1": {
+    "Unknown": {
+      "phenotype": "Indeterminate",
+      "drugs": {
+        "SIMVASTATIN": {
+          "risk_level": "Unknown",
+          "recommendation": "Variant data insufficient. Proceed with standard clinical precautions."
+        }
+      }
+    }
+  }
+}

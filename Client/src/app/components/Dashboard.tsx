@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+=======
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import axios from "axios";
+import { toast } from "sonner"; // Ensure sonner is installed for toast notifications
+import { useAuth } from './AuthContext'; // ✅ Correct Import
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
 import {
   Microscope, ArrowRight, RotateCcw, ShieldCheck, Activity,
   FlaskConical, Dna, Sparkles,
@@ -16,6 +24,7 @@ import { ActionButtons } from "./ActionButtons";
 
 type AppState = "empty" | "loading" | "results";
 
+<<<<<<< HEAD
 const mockVariants = [
   {
     gene: "CYP2C9",
@@ -94,11 +103,17 @@ const mockResultData = {
 };
 
 export function Dashboard() {
+=======
+export function Dashboard() {
+  const { user } = useAuth(); // ✅ Correct Placement: Inside the component!
+  
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
   const [appState, setAppState] = useState<AppState>("empty");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedDrugs, setSelectedDrugs] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+<<<<<<< HEAD
 
   const canAnalyze = selectedFile && selectedDrugs.length > 0;
 
@@ -108,6 +123,65 @@ export function Dashboard() {
     setProgress(0);
     setCurrentStep(0);
   }, [canAnalyze]);
+=======
+  
+  // New state to hold the REAL data from your backend
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+
+  const canAnalyze = selectedFile && selectedDrugs.length > 0;
+
+  const handleAnalyze = async () => {
+    if (!canAnalyze || !user) {
+      toast.error('Authentication Error', { description: 'You must be logged in to analyze data.'});
+      return;
+    }
+
+    setAppState("loading");
+    setProgress(10);
+    setCurrentStep(1);
+
+    const formData = new FormData();
+    formData.append('vcfFile', selectedFile);
+    // Use the first drug from the array for the backend API
+    formData.append('drugName', selectedDrugs[0]); 
+
+    try {
+      // Fake progress steps for UI UX while API runs
+      setProgress(40);
+      setCurrentStep(2);
+
+      // The Real API Call with the Security Token
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      };
+
+      const res = await axios.post('http://localhost:5000/api/analyze', formData, config);
+      
+      setProgress(100);
+      setCurrentStep(3);
+      
+      // Save the real data to state
+      setAnalysisResult(res.data);
+      
+      // Slight delay so the user sees the 100% completion before UI swap
+      setTimeout(() => {
+        setAppState("results");
+        toast.success("Analysis Complete");
+      }, 500);
+
+    } catch (err: any) {
+      console.error(err);
+      setAppState("empty");
+      if (err.response?.status === 401) {
+         toast.error('Session Expired', { description: 'Please log in again.' });
+      } else {
+         toast.error('Analysis Failed', { description: 'Could not connect to AI engine.' });
+      }
+    }
+  };
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
 
   const handleReset = useCallback(() => {
     setAppState("empty");
@@ -115,6 +189,7 @@ export function Dashboard() {
     setSelectedDrugs([]);
     setProgress(0);
     setCurrentStep(0);
+<<<<<<< HEAD
   }, []);
 
   // Loading simulation
@@ -143,6 +218,11 @@ export function Dashboard() {
     return () => clearInterval(timer);
   }, [appState]);
 
+=======
+    setAnalysisResult(null);
+  }, []);
+
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9] flex flex-col">
       <Header />
@@ -150,6 +230,10 @@ export function Dashboard() {
       <main className="flex-1">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
           <AnimatePresence mode="wait">
+<<<<<<< HEAD
+=======
+            
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
             {/* ═════════ EMPTY STATE ═════════ */}
             {appState === "empty" && (
               <motion.div
@@ -200,6 +284,7 @@ export function Dashboard() {
                   transition={{ delay: 0.25 }}
                   className="bg-white/80 backdrop-blur-sm rounded-3xl border border-[#E2E8F0]/70 shadow-xl shadow-black/[0.03] p-7 sm:p-9 max-w-2xl mx-auto"
                 >
+<<<<<<< HEAD
                   {/* Step indicators */}
                   <div className="flex items-center gap-3 mb-8">
                     {[
@@ -253,6 +338,12 @@ export function Dashboard() {
                       selectedDrugs={selectedDrugs}
                       onDrugsChange={setSelectedDrugs}
                     />
+=======
+                  <div className="space-y-6">
+                    <FileUpload onFileSelected={setSelectedFile} selectedFile={selectedFile} />
+                    <div className="h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent" />
+                    <DrugInput selectedDrugs={selectedDrugs} onDrugsChange={setSelectedDrugs} />
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
 
                     <motion.button
                       onClick={handleAnalyze}
@@ -282,6 +373,7 @@ export function Dashboard() {
                     </motion.button>
                   </div>
                 </motion.div>
+<<<<<<< HEAD
 
                 {/* Trust Indicators */}
                 <motion.div
@@ -306,6 +398,8 @@ export function Dashboard() {
                     PharmGKB Validated
                   </div>
                 </motion.div>
+=======
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
               </motion.div>
             )}
 
@@ -322,8 +416,13 @@ export function Dashboard() {
               </motion.div>
             )}
 
+<<<<<<< HEAD
             {/* ═════════ RESULTS STATE ═════════ */}
             {appState === "results" && (
+=======
+            {/* ═════════ REAL RESULTS STATE ═════════ */}
+            {appState === "results" && analysisResult && (
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
               <motion.div
                 key="results"
                 initial={{ opacity: 0 }}
@@ -335,6 +434,7 @@ export function Dashboard() {
                 {/* Results Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
                   <div>
+<<<<<<< HEAD
                     <div className="flex items-center gap-3 mb-1">
                       <h2 className="text-[#0F172A]" style={{ fontSize: "1.375rem", fontWeight: 900, letterSpacing: "-0.02em" }}>
                         Analysis Results
@@ -348,13 +448,22 @@ export function Dashboard() {
                     </div>
                     <p className="text-[#64748B]" style={{ fontSize: "0.8125rem" }}>
                       Pharmacogenomic risk assessment for patient <span style={{ fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>PAT-9928</span>
+=======
+                    <h2 className="text-[#0F172A]" style={{ fontSize: "1.375rem", fontWeight: 900 }}>Analysis Results</h2>
+                    <p className="text-[#64748B]" style={{ fontSize: "0.8125rem" }}>
+                      Pharmacogenomic risk assessment for <span style={{ fontWeight: 700 }}>{analysisResult.patient_id}</span>
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
                     </p>
                   </div>
                   <motion.button
                     onClick={handleReset}
                     whileTap={{ scale: 0.97 }}
+<<<<<<< HEAD
                     className="inline-flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#475569] px-5 py-2.5 rounded-xl hover:bg-[#F8FAFC] hover:border-[#CBD5E1] hover:shadow-sm transition-all"
                     style={{ fontSize: "0.8125rem", fontWeight: 700 }}
+=======
+                    className="inline-flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#475569] px-5 py-2.5 rounded-xl hover:bg-[#F8FAFC]"
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
                   >
                     <RotateCcw className="w-4 h-4" />
                     New Analysis
@@ -363,21 +472,40 @@ export function Dashboard() {
 
                 {/* Patient Info */}
                 <PatientInfoCard
+<<<<<<< HEAD
                   patientId="PAT-9928"
                   timestamp="Feb 19, 2026 · 02:32 PM UTC"
                   fileName={selectedFile?.name || "patient_sample.vcf"}
                   drugsAnalyzed={selectedDrugs.length > 0 ? selectedDrugs : ["WARFARIN", "CODEINE", "CLOPIDOGREL"]}
+=======
+                  patientId={analysisResult.patient_id}
+                  timestamp={new Date(analysisResult.timestamp).toLocaleString()}
+                  fileName={selectedFile?.name || "patient_sample.vcf"}
+                  drugsAnalyzed={[analysisResult.drug]}
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
                 />
 
                 {/* Risk Assessment */}
                 <RiskAssessmentCard
+<<<<<<< HEAD
                   overallRisk="toxic"
                   overallConfidence={98}
                   drugRisks={mockDrugRisks}
+=======
+                  overallRisk={analysisResult.risk_assessment.risk_label.toLowerCase()}
+                  overallConfidence={analysisResult.risk_assessment.confidence_score * 100}
+                  drugRisks={[{
+                    drug: analysisResult.drug,
+                    risk: analysisResult.risk_assessment.risk_label.toLowerCase(),
+                    confidence: analysisResult.risk_assessment.confidence_score * 100,
+                    summary: analysisResult.pharmacogenomic_profile.phenotype
+                  }]}
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
                 />
 
                 {/* Two Column Layout */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<<<<<<< HEAD
                   <GeneticProfilePanel variants={mockVariants} />
                   <AIClinicalExplanation
                     explanation={mockExplanation}
@@ -402,11 +530,32 @@ export function Dashboard() {
                   </div>
                   <ActionButtons resultData={mockResultData} />
                 </motion.div>
+=======
+                  {/* Mapping the backend variants to your UI format */}
+                  <GeneticProfilePanel variants={analysisResult.detected_variants.map((v: any) => ({
+                    gene: v.gene,
+                    diplotype: v.variant,
+                    phenotype: "Detected",
+                    activityScore: "N/A",
+                    clinicalSignificance: "Review",
+                    affectedDrugs: [analysisResult.drug]
+                  }))} />
+                  
+                  <AIClinicalExplanation
+                    explanation={analysisResult.llm_generated_explanation}
+                    recommendations={[analysisResult.clinical_recommendation]}
+                    references={["CPIC® Guidelines", "PharmGKB Database"]}
+                    modelVersion="PharmaGuard-Groq-v1"
+                  />
+                </div>
+
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </main>
+<<<<<<< HEAD
 
       {/* Footer */}
       <footer className="border-t border-[#E2E8F0]/60 bg-white/60 backdrop-blur-sm py-5 mt-auto">
@@ -424,3 +573,8 @@ export function Dashboard() {
     </div>
   );
 }
+=======
+    </div>
+  );
+}
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)

@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 const { parseVCF } = require('../utils/vcfParser'); 
 const { calculateRisk } = require('../utils/riskAssessor');
-const { generateClinicalExplanation } = require('../utils/llmService'); // 1. Import the AI Service
+const { generateClinicalExplanation } = require('../utils/llmService');
 
-router.post('/analyze', upload.single('vcfFile'), async (req, res) => {
+// 1. Notice the path is '/' and 'protect' is inserted right before 'upload'
+router.post('/', protect, upload.single('vcfFile'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No VCF file uploaded.' });
@@ -24,7 +26,7 @@ router.post('/analyze', upload.single('vcfFile'), async (req, res) => {
         // Step B: Calculate the Risk Level
         const riskProfile = calculateRisk(extractedVariants, drugName);
 
-        // Step C: Ask OpenAI for the Biological Explanation
+        // Step C: Ask AI for the Biological Explanation
         const aiExplanation = await generateClinicalExplanation(riskProfile, drugName);
 
         // Step D: Send the final payload back to the frontend
@@ -44,7 +46,7 @@ router.post('/analyze', upload.single('vcfFile'), async (req, res) => {
             },
             detected_variants: extractedVariants,
             clinical_recommendation: riskProfile.recommendation,
-            llm_generated_explanation: aiExplanation // 2. Add the AI explanation here!
+            llm_generated_explanation: aiExplanation 
         });
 
     } catch (error) {

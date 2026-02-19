@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
 interface User {
@@ -5,10 +6,22 @@ interface User {
   email: string;
   role: string;
   institution: string;
+=======
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import axios from 'axios';
+
+interface User {
+  _id: string;
+  name: string;
+  role: string;
+  email: string;
+  token: string;
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
 }
 
 interface AuthContextType {
   user: User | null;
+<<<<<<< HEAD
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (data: SignupData) => Promise<boolean>;
@@ -68,3 +81,53 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
+=======
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
+  isAuthenticated: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+
+  // Check if user is already logged in when the app loads
+  useEffect(() => {
+    const storedUser = localStorage.getItem('pharmaguard_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+    setUser(response.data);
+    localStorage.setItem('pharmaguard_user', JSON.stringify(response.data));
+  };
+
+  const register = async (name: string, email: string, password: string) => {
+    const response = await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+    setUser(response.data);
+    localStorage.setItem('pharmaguard_user', JSON.stringify(response.data));
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('pharmaguard_user');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
+  return context;
+};
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
@@ -531,3 +532,164 @@ function SignupForm() {
     </>
   );
 }
+=======
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
+import { Dna, Lock, Mail, Activity, User as UserIcon } from 'lucide-react';
+
+export const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { login, register } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password || (!isLogin && !name)) {
+      toast.error('Missing Information', { description: 'Please fill out all fields.' });
+      return;
+    }
+
+    setLoading(true);
+    const toastId = toast.loading('Authenticating...', { description: 'Contacting secure server.' });
+
+    try {
+      if (isLogin) {
+        await login(email, password);
+        toast.success('Welcome Back', { id: toastId, description: 'Successfully logged into PharmaGuard.' });
+      } else {
+        await register(name, email, password);
+        toast.success('Account Created', { id: toastId, description: 'Your provider account is ready.' });
+      }
+      navigate('/dashboard'); // Send them to the protected app!
+    } catch (error: any) {
+      console.error(error);
+      const message = error.response?.data?.message || 'System error. Please try again.';
+      toast.error('Authentication Failed', { id: toastId, description: message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex bg-slate-50 font-sans">
+      {/* Left Side: Branding (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 text-white flex-col justify-between p-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-600 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+        
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="bg-blue-600 p-2 rounded-lg">
+            <Dna className="w-8 h-8 text-white" />
+          </div>
+          <span className="text-3xl font-bold tracking-tight">PharmaGuard <span className="text-blue-500">AI</span></span>
+        </div>
+
+        <div className="relative z-10 max-w-lg">
+          <Activity className="w-12 h-12 text-blue-500 mb-6" />
+          <h1 className="text-4xl font-bold leading-tight mb-4">
+            Precision Medicine, <br />Powered by Genomics.
+          </h1>
+          <p className="text-slate-400 text-lg">
+            Securely access patient pharmacogenomic profiles and leverage AI for safer, personalized clinical decisions.
+          </p>
+        </div>
+
+        <div className="relative z-10 text-slate-500 text-sm">
+          &copy; 2026 PharmaGuard Systems. HIPAA Compliant.
+        </div>
+      </div>
+
+      {/* Right Side: Login/Register Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
+        <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+              {isLogin ? 'Provider Portal' : 'Create Account'}
+            </h2>
+            <p className="text-slate-500 text-sm mt-2">
+              {isLogin ? 'Sign in to access patient genomic data.' : 'Register as a new healthcare provider.'}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {!isLogin && (
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Full Name</label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <input 
+                    type="text" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Dr. Abhay Pal" 
+                    className="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Provider Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="dr.smith@hospital.org" 
+                  className="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••" 
+                  className="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+              {isLogin && (
+                <div className="flex justify-end mt-2">
+                  <a href="#" className="text-xs text-blue-600 font-medium hover:underline">Forgot password?</a>
+                </div>
+              )}
+            </div>
+
+            <button 
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 mt-4 bg-blue-600 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:bg-slate-400 transition-all flex justify-center items-center gap-2"
+            >
+              {loading ? 'Authenticating...' : (isLogin ? 'Secure Sign In' : 'Register Account')}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center pt-6 border-t border-slate-100">
+            <p className="text-sm text-slate-600">
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <button 
+                onClick={() => setIsLogin(!isLogin)} 
+                className="text-blue-600 font-bold hover:underline bg-transparent border-none cursor-pointer"
+              >
+                {isLogin ? 'Sign up' : 'Log in'}
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+>>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)

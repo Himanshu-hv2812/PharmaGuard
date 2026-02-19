@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/uploadMiddleware');
 const { parseVCF } = require('../utils/vcfParser'); 
-const { calculateRisk } = require('../utils/riskAssessor'); // Import our new logic
+const { calculateRisk } = require('../utils/riskAssessor');
+const { generateClinicalExplanation } = require('../utils/llmService'); // 1. Import the AI Service
 
 router.post('/analyze', upload.single('vcfFile'), async (req, res) => {
     try {
@@ -10,22 +11,26 @@ router.post('/analyze', upload.single('vcfFile'), async (req, res) => {
             return res.status(400).json({ error: 'No VCF file uploaded.' });
         }
         
-        // Ensure the user provided a drug name (e.g., from a text input on the frontend)
         const drugName = req.body.drugName;
         if (!drugName) {
             return res.status(400).json({ error: 'Please provide a drugName.' });
         }
 
         const filePath = req.file.path;
+        
+        // Step A: Parse the VCF File
         const extractedVariants = await parseVCF(filePath);
         
-        // Pass the genetic data and the drug to our clinical engine
+        // Step B: Calculate the Risk Level
         const riskProfile = calculateRisk(extractedVariants, drugName);
 
-        // Format the output exactly as the hackathon judges expect
+        // Step C: Ask OpenAI for the Biological Explanation
+        const aiExplanation = await generateClinicalExplanation(riskProfile, drugName);
+
+        // Step D: Send the final payload back to the frontend
         res.status(200).json({
             status: "success",
-            patient_id: "PT-Hackathon", // Mock ID for now
+            patient_id: "PT-Hackathon", 
             timestamp: new Date().toISOString(),
             drug: drugName.toUpperCase(),
             risk_assessment: {
@@ -38,11 +43,12 @@ router.post('/analyze', upload.single('vcfFile'), async (req, res) => {
                 phenotype: riskProfile.phenotype
             },
             detected_variants: extractedVariants,
-            clinical_recommendation: riskProfile.recommendation
+            clinical_recommendation: riskProfile.recommendation,
+            llm_generated_explanation: aiExplanation // 2. Add the AI explanation here!
         });
 
     } catch (error) {
-        console.error("Parsing Error:", error);
+        console.error("Analysis Error:", error);
         res.status(500).json({ error: 'Failed to process genomic data.' });
     }
 });

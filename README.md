@@ -4,8 +4,8 @@
 **Track:** Health Tech Track / Pharmacogenomics / Explainable AI Track
 
 ## 🔗 Mandatory Links
-* **Live Deployed Web Application URL:** [......Added soon........]
-* **LinkedIn Video Demonstration:** [...........Added soon.......]
+* **Live Deployed Web Application URL:**  https://capable-dodol-6eca80.netlify.app/) 
+* **LinkedIn Video Demonstration:** https://www.linkedin.com/posts/jai-ganesh-689246333_pharmaguard-shadowcoders-rifthackathon-activity-7430439836529893376-8lo-?utm_source=share&utm_medium=member_android&rcm=ACoAAFPc-EkBaFzu3OyvkQ49lbGdfdQlc1HGtB0
 * **Hashtags:** #RIFT2026 #PharmaGuard #Pharmacogenomics #AIinHealthcare
 
 ## 🚨 Problem Overview

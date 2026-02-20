@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
@@ -692,4 +691,4 @@ export const AuthPage = () => {
     </div>
   );
 };
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
+

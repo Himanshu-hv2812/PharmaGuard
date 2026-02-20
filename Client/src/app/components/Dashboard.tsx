@@ -1,581 +1,123 @@
-<<<<<<< HEAD
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
-=======
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState } from "react";
 import axios from "axios";
-import { toast } from "sonner"; // Ensure sonner is installed for toast notifications
-import { useAuth } from './AuthContext'; // ✅ Correct Import
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-import {
-  Microscope, ArrowRight, RotateCcw, ShieldCheck, Activity,
-  FlaskConical, Dna, Sparkles,
-} from "lucide-react";
-import { Header } from "./header";
-import { FileUpload } from "./FileUpload";
-import { DrugInput } from "./DrugInput";
-import { LoadingState } from "./LoadingState";
-import { PatientInfoCard } from "./PatientInfoCard";
-import { RiskAssessmentCard } from "./RiskAssessmentCard";
-import { GeneticProfilePanel } from "./GeneticProfilePanel";
-import { AIClinicalExplanation } from "./AIClinicalExplanation";
-import { ActionButtons } from "./ActionButtons";
+import { useAuth } from "./AuthContext";
+import { Upload, FileText, Activity, LogOut, Loader2 } from "lucide-react";
 
-type AppState = "empty" | "loading" | "results";
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-<<<<<<< HEAD
-const mockVariants = [
-  {
-    gene: "CYP2C9",
-    diplotype: "*2/*3",
-    phenotype: "Poor Metabolizer",
-    activityScore: "0.5",
-    clinicalSignificance: "Poor" as const,
-    affectedDrugs: ["WARFARIN", "CELECOXIB"],
-  },
-  {
-    gene: "CYP2D6",
-    diplotype: "*4/*4",
-    phenotype: "Poor Metabolizer",
-    activityScore: "0.0",
-    clinicalSignificance: "Poor" as const,
-    affectedDrugs: ["CODEINE", "TRAMADOL"],
-  },
-  {
-    gene: "CYP2C19",
-    diplotype: "*1/*2",
-    phenotype: "Intermediate Metabolizer",
-    activityScore: "1.0",
-    clinicalSignificance: "Reduced" as const,
-    affectedDrugs: ["CLOPIDOGREL", "OMEPRAZOLE"],
-  },
-  {
-    gene: "VKORC1",
-    diplotype: "-1639 A/A",
-    phenotype: "High Sensitivity",
-    activityScore: "N/A",
-    clinicalSignificance: "Reduced" as const,
-    affectedDrugs: ["WARFARIN"],
-  },
-  {
-    gene: "CYP3A5",
-    diplotype: "*1/*3",
-    phenotype: "Intermediate Metabolizer",
-    activityScore: "1.0",
-    clinicalSignificance: "Normal" as const,
-    affectedDrugs: ["TACROLIMUS"],
-  },
-];
+export default function Dashboard() {
+  const { user, logout } = useAuth();
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState("");
 
-const mockDrugRisks = [
-  { drug: "WARFARIN", risk: "toxic" as const, confidence: 98, summary: "CYP2C9 Poor Metabolizer + VKORC1 High Sensitivity" },
-  { drug: "CODEINE", risk: "toxic" as const, confidence: 96, summary: "CYP2D6 PM — No analgesic effect, risk of toxicity" },
-  { drug: "CLOPIDOGREL", risk: "adjust" as const, confidence: 89, summary: "CYP2C19 IM — Reduced antiplatelet response" },
-];
-
-const mockExplanation = `Based on the comprehensive pharmacogenomic analysis of patient PAT-9928's VCF data, critical gene-drug interactions have been identified. The patient carries CYP2C9 *2/*3 diplotype (Poor Metabolizer, activity score 0.5) combined with VKORC1 -1639 A/A genotype, indicating significantly increased sensitivity to Warfarin. Standard dosing would result in supra-therapeutic INR levels and severe bleeding risk. Additionally, the CYP2D6 *4/*4 genotype (Poor Metabolizer) renders Codeine ineffective as it cannot be converted to its active metabolite morphine, while simultaneously increasing risk of adverse effects from parent compound accumulation.`;
-
-const mockRecommendations = [
-  "WARFARIN: Initiate therapy at ≤2mg/day (60-80% reduction from standard dose). Use IWPC dosing algorithm incorporating CYP2C9 and VKORC1 genotypes. Monitor INR every 2-3 days during initiation.",
-  "CODEINE: Contraindicated. Select alternative analgesic not metabolized by CYP2D6 (e.g., acetaminophen, NSAIDs, or morphine if opioid required).",
-  "CLOPIDOGREL: Consider alternative antiplatelet therapy (e.g., prasugrel or ticagrelor) for patients requiring dual antiplatelet therapy post-ACS or PCI.",
-  "Order confirmatory clinical-grade pharmacogenomic testing if analysis was based on research-grade VCF data.",
-];
-
-const mockReferences = [
-  "CPIC® Guideline: Warfarin (2017)",
-  "CPIC® Guideline: Codeine (2019)",
-  "PharmGKB: CYP2C19-Clopidogrel",
-  "FDA Table of PGx Biomarkers",
-  "DPWG Guidelines v3.2",
-];
-
-const mockResultData = {
-  patientId: "PAT-9928",
-  timestamp: "2026-02-19T14:32:00Z",
-  overallRisk: "toxic",
-  confidence: 98,
-  variants: mockVariants,
-  drugRisks: mockDrugRisks,
-  aiExplanation: mockExplanation,
-  recommendations: mockRecommendations,
-};
-
-export function Dashboard() {
-=======
-export function Dashboard() {
-  const { user } = useAuth(); // ✅ Correct Placement: Inside the component!
-  
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-  const [appState, setAppState] = useState<AppState>("empty");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedDrugs, setSelectedDrugs] = useState<string[]>([]);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
-<<<<<<< HEAD
-
-  const canAnalyze = selectedFile && selectedDrugs.length > 0;
-
-  const handleAnalyze = useCallback(() => {
-    if (!canAnalyze) return;
-    setAppState("loading");
-    setProgress(0);
-    setCurrentStep(0);
-  }, [canAnalyze]);
-=======
-  
-  // New state to hold the REAL data from your backend
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-
-  const canAnalyze = selectedFile && selectedDrugs.length > 0;
-
-  const handleAnalyze = async () => {
-    if (!canAnalyze || !user) {
-      toast.error('Authentication Error', { description: 'You must be logged in to analyze data.'});
-      return;
-    }
-
-    setAppState("loading");
-    setProgress(10);
-    setCurrentStep(1);
-
-    const formData = new FormData();
-    formData.append('vcfFile', selectedFile);
-    // Use the first drug from the array for the backend API
-    formData.append('drugName', selectedDrugs[0]); 
-
-    try {
-      // Fake progress steps for UI UX while API runs
-      setProgress(40);
-      setCurrentStep(2);
-
-      // The Real API Call with the Security Token
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${user.token}`
-        }
-      };
-
-      const res = await axios.post(`${API_BASE_URL}/api/analyze`, formData, config);
-      
-      setProgress(100);
-      setCurrentStep(3);
-      
-      // Save the real data to state
-      setAnalysisResult(res.data);
-      
-      // Slight delay so the user sees the 100% completion before UI swap
-      setTimeout(() => {
-        setAppState("results");
-        toast.success("Analysis Complete");
-      }, 500);
-
-    } catch (err: any) {
-      console.error(err);
-      setAppState("empty");
-      if (err.response?.status === 401) {
-         toast.error('Session Expired', { description: 'Please log in again.' });
-      } else {
-         toast.error('Analysis Failed', { description: 'Could not connect to AI engine.' });
-      }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+      setError("");
     }
   };
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
 
-  const handleReset = useCallback(() => {
-    setAppState("empty");
-    setSelectedFile(null);
-    setSelectedDrugs([]);
-    setProgress(0);
-    setCurrentStep(0);
-<<<<<<< HEAD
-  }, []);
+  const handleAnalyze = async () => {
+    if (!file) return setError("Please select a VCF file first.");
+    
+    setLoading(true);
+    setError("");
+    const formData = new FormData();
+    formData.append("vcf", file);
 
-  // Loading simulation
-  useEffect(() => {
-    if (appState !== "loading") return;
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${user?.token}`
+        }
+      };
+      
+      const res = await axios.post(`${API_BASE_URL}/api/analyze`, formData, config);
+      setResult(res.data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Analysis failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const totalDuration = 4000;
-    const stepDuration = totalDuration / 4;
-    const interval = 50;
-    let elapsed = 0;
-
-    const timer = setInterval(() => {
-      elapsed += interval;
-      const newProgress = Math.min(Math.round((elapsed / totalDuration) * 100), 100);
-      const newStep = Math.min(Math.floor(elapsed / stepDuration), 3);
-
-      setProgress(newProgress);
-      setCurrentStep(newStep);
-
-      if (elapsed >= totalDuration) {
-        clearInterval(timer);
-        setTimeout(() => setAppState("results"), 300);
-      }
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, [appState]);
-
-=======
-    setAnalysisResult(null);
-  }, []);
-
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9] flex flex-col">
-      <Header />
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col">
+        <h2 className="text-xl font-bold text-blue-600 mb-8">PharmaGuard</h2>
+        <nav className="space-y-2 flex-1">
+          <button className="flex items-center gap-3 w-full p-3 bg-blue-50 text-blue-600 rounded-lg font-medium">
+            <Activity size={20} /> Dashboard
+          </button>
+          <button className="flex items-center gap-3 w-full p-3 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+            <FileText size={20} /> Reports
+          </button>
+        </nav>
+        <button onClick={logout} className="flex items-center gap-3 w-full p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-auto">
+          <LogOut size={20} /> Logout
+        </button>
+      </div>
 
-      <main className="flex-1">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
-          <AnimatePresence mode="wait">
-<<<<<<< HEAD
-=======
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <header className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Research Dashboard</h1>
+            <p className="text-slate-500">Welcome, {user?.name}</p>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Upload Section */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="text-lg font-semibold mb-4">Analyze VCF Data</h3>
+            <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
+              <input type="file" accept=".vcf" onChange={handleFileChange} className="hidden" id="vcf-upload" />
+              <label htmlFor="vcf-upload" className="cursor-pointer flex flex-col items-center">
+                <Upload className="text-slate-400 mb-4" size={40} />
+                <span className="text-slate-600 font-medium">
+                  {file ? file.name : "Click to upload VCF file"}
+                </span>
+                <span className="text-slate-400 text-sm mt-1">Maximum file size: 10MB</span>
+              </label>
+            </div>
             
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-            {/* ═════════ EMPTY STATE ═════════ */}
-            {appState === "empty" && (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-              >
-                {/* Hero Section */}
-                <div className="text-center mb-10 pt-6">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="inline-flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#1E40AF] px-4 py-2 rounded-full mb-5 shadow-sm"
-                    style={{ fontSize: "0.75rem", fontWeight: 600 }}
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    FDA-Grade Clinical Decision Support
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-                  </motion.div>
-                  <motion.h1
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="text-[#0F172A] mb-3"
-                    style={{ fontSize: "1.875rem", fontWeight: 900, lineHeight: 1.2, letterSpacing: "-0.03em" }}
-                  >
-                    Pharmacogenomic Risk Analysis
-                  </motion.h1>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-[#64748B] max-w-lg mx-auto"
-                    style={{ fontSize: "0.9375rem", lineHeight: 1.65 }}
-                  >
-                    Upload a patient VCF file and specify medications to receive
-                    AI-powered risk assessment with clinical recommendations.
-                  </motion.p>
+            {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+            
+            <button 
+              onClick={handleAnalyze}
+              disabled={loading || !file}
+              className="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+            >
+              {loading ? <><Loader2 className="animate-spin" size={20} /> Processing...</> : "Start AI Analysis"}
+            </button>
+          </div>
+
+          {/* Results Section */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="text-lg font-semibold mb-4">Analysis Results</h3>
+            {result ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 text-green-700 rounded-lg border border-green-100">
+                  Analysis Complete: {result.variantsCount} variants identified.
                 </div>
-
-                {/* Input Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="bg-white/80 backdrop-blur-sm rounded-3xl border border-[#E2E8F0]/70 shadow-xl shadow-black/[0.03] p-7 sm:p-9 max-w-2xl mx-auto"
-                >
-<<<<<<< HEAD
-                  {/* Step indicators */}
-                  <div className="flex items-center gap-3 mb-8">
-                    {[
-                      { num: 1, label: "Upload VCF", icon: Dna, done: !!selectedFile },
-                      { num: 2, label: "Select Drugs", icon: FlaskConical, done: selectedDrugs.length > 0 },
-                      { num: 3, label: "Analyze", icon: Microscope, done: false },
-                    ].map((step, i) => (
-                      <div key={step.num} className="flex items-center gap-2.5 flex-1">
-                        <motion.div
-                          animate={step.done ? { scale: [1, 1.15, 1] } : {}}
-                          transition={{ duration: 0.3 }}
-                          className={`
-                            w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300
-                            ${step.done
-                              ? "bg-[#16A34A] text-white shadow-sm shadow-[#16A34A]/20"
-                              : "bg-[#F1F5F9] text-[#94A3B8]"
-                            }
-                          `}
-                          style={{ fontSize: "0.75rem", fontWeight: 700 }}
-                        >
-                          {step.done ? (
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : (
-                            <step.icon className="w-4 h-4" />
-                          )}
-                        </motion.div>
-                        <span
-                          className={`hidden sm:block transition-colors ${step.done ? "text-[#0F172A]" : "text-[#94A3B8]"}`}
-                          style={{ fontSize: "0.75rem", fontWeight: 600 }}
-                        >
-                          {step.label}
-                        </span>
-                        {i < 2 && (
-                          <div className={`flex-1 h-px transition-colors duration-500 ${step.done ? "bg-[#16A34A]/30" : "bg-[#E2E8F0]"}`} />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="space-y-6">
-                    <FileUpload
-                      onFileSelected={setSelectedFile}
-                      selectedFile={selectedFile}
-                    />
-
-                    <div className="h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent" />
-
-                    <DrugInput
-                      selectedDrugs={selectedDrugs}
-                      onDrugsChange={setSelectedDrugs}
-                    />
-=======
-                  <div className="space-y-6">
-                    <FileUpload onFileSelected={setSelectedFile} selectedFile={selectedFile} />
-                    <div className="h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent" />
-                    <DrugInput selectedDrugs={selectedDrugs} onDrugsChange={setSelectedDrugs} />
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-
-                    <motion.button
-                      onClick={handleAnalyze}
-                      disabled={!canAnalyze}
-                      whileTap={canAnalyze ? { scale: 0.98 } : {}}
-                      className={`
-                        w-full flex items-center justify-center gap-3 py-4 rounded-2xl transition-all duration-300 mt-2
-                        ${canAnalyze
-                          ? "bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white shadow-xl shadow-[#1E40AF]/25 hover:shadow-2xl hover:shadow-[#1E40AF]/30 hover:from-[#1E3A8A] hover:to-[#1E40AF]"
-                          : "bg-[#F1F5F9] text-[#94A3B8] cursor-not-allowed"
-                        }
-                      `}
-                      style={{ fontSize: "0.9375rem", fontWeight: 700 }}
-                    >
-                      {canAnalyze ? (
-                        <>
-                          <Sparkles className="w-5 h-5" />
-                          Run Pharmacogenomic Analysis
-                          <ArrowRight className="w-4 h-4" />
-                        </>
-                      ) : (
-                        <>
-                          <Microscope className="w-5 h-5" />
-                          Complete Steps Above to Analyze
-                        </>
-                      )}
-                    </motion.button>
-                  </div>
-                </motion.div>
-<<<<<<< HEAD
-
-                {/* Trust Indicators */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-10 text-[#94A3B8]"
-                  style={{ fontSize: "0.6875rem", fontWeight: 500 }}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-                    HIPAA Compliant
-                  </div>
-                  <span className="w-1 h-1 rounded-full bg-[#CBD5E1] hidden sm:block" />
-                  <div className="flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5" />
-                    CPIC® Guidelines
-                  </div>
-                  <span className="w-1 h-1 rounded-full bg-[#CBD5E1] hidden sm:block" />
-                  <div className="flex items-center gap-1.5">
-                    <FlaskConical className="w-3.5 h-3.5" />
-                    PharmGKB Validated
-                  </div>
-                </motion.div>
-=======
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-              </motion.div>
+                <div className="prose prose-slate max-w-none">
+                  <p className="text-slate-600 whitespace-pre-wrap">{result.aiSummary}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-slate-400">
+                <Activity size={48} className="mb-4 opacity-20" />
+                <p>Upload a file to see AI insights</p>
+              </div>
             )}
-
-            {/* ═════════ LOADING STATE ═════════ */}
-            {appState === "loading" && (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.35 }}
-              >
-                <LoadingState progress={progress} currentStep={currentStep} />
-              </motion.div>
-            )}
-
-<<<<<<< HEAD
-            {/* ═════════ RESULTS STATE ═════════ */}
-            {appState === "results" && (
-=======
-            {/* ═════════ REAL RESULTS STATE ═════════ */}
-            {appState === "results" && analysisResult && (
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-              <motion.div
-                key="results"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                {/* Results Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
-                  <div>
-<<<<<<< HEAD
-                    <div className="flex items-center gap-3 mb-1">
-                      <h2 className="text-[#0F172A]" style={{ fontSize: "1.375rem", fontWeight: 900, letterSpacing: "-0.02em" }}>
-                        Analysis Results
-                      </h2>
-                      <span
-                        className="bg-[#F0FDF4] text-[#15803D] px-2.5 py-0.5 rounded-lg border border-[#BBF7D0]/50"
-                        style={{ fontSize: "0.625rem", fontWeight: 700 }}
-                      >
-                        COMPLETE
-                      </span>
-                    </div>
-                    <p className="text-[#64748B]" style={{ fontSize: "0.8125rem" }}>
-                      Pharmacogenomic risk assessment for patient <span style={{ fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>PAT-9928</span>
-=======
-                    <h2 className="text-[#0F172A]" style={{ fontSize: "1.375rem", fontWeight: 900 }}>Analysis Results</h2>
-                    <p className="text-[#64748B]" style={{ fontSize: "0.8125rem" }}>
-                      Pharmacogenomic risk assessment for <span style={{ fontWeight: 700 }}>{analysisResult.patient_id}</span>
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-                    </p>
-                  </div>
-                  <motion.button
-                    onClick={handleReset}
-                    whileTap={{ scale: 0.97 }}
-<<<<<<< HEAD
-                    className="inline-flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#475569] px-5 py-2.5 rounded-xl hover:bg-[#F8FAFC] hover:border-[#CBD5E1] hover:shadow-sm transition-all"
-                    style={{ fontSize: "0.8125rem", fontWeight: 700 }}
-=======
-                    className="inline-flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#475569] px-5 py-2.5 rounded-xl hover:bg-[#F8FAFC]"
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    New Analysis
-                  </motion.button>
-                </div>
-
-                {/* Patient Info */}
-                <PatientInfoCard
-<<<<<<< HEAD
-                  patientId="PAT-9928"
-                  timestamp="Feb 19, 2026 · 02:32 PM UTC"
-                  fileName={selectedFile?.name || "patient_sample.vcf"}
-                  drugsAnalyzed={selectedDrugs.length > 0 ? selectedDrugs : ["WARFARIN", "CODEINE", "CLOPIDOGREL"]}
-=======
-                  patientId={analysisResult.patient_id}
-                  timestamp={new Date(analysisResult.timestamp).toLocaleString()}
-                  fileName={selectedFile?.name || "patient_sample.vcf"}
-                  drugsAnalyzed={[analysisResult.drug]}
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-                />
-
-                {/* Risk Assessment */}
-                <RiskAssessmentCard
-<<<<<<< HEAD
-                  overallRisk="toxic"
-                  overallConfidence={98}
-                  drugRisks={mockDrugRisks}
-=======
-                  overallRisk={analysisResult.risk_assessment.risk_label.toLowerCase()}
-                  overallConfidence={analysisResult.risk_assessment.confidence_score * 100}
-                  drugRisks={[{
-                    drug: analysisResult.drug,
-                    risk: analysisResult.risk_assessment.risk_label.toLowerCase(),
-                    confidence: analysisResult.risk_assessment.confidence_score * 100,
-                    summary: analysisResult.pharmacogenomic_profile.phenotype
-                  }]}
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-                />
-
-                {/* Two Column Layout */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-<<<<<<< HEAD
-                  <GeneticProfilePanel variants={mockVariants} />
-                  <AIClinicalExplanation
-                    explanation={mockExplanation}
-                    recommendations={mockRecommendations}
-                    references={mockReferences}
-                    modelVersion="v4.2-CPIC"
-                  />
-                </div>
-
-                {/* Action Bar */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl border border-[#E2E8F0]/70 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
-                >
-                  <div className="flex items-center gap-2.5 text-[#64748B]">
-                    <Dna className="w-4 h-4 text-[#3B82F6]" />
-                    <span style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                      Report <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>PG-2026-0219-9928</span> · PharmaGuard AI
-                    </span>
-                  </div>
-                  <ActionButtons resultData={mockResultData} />
-                </motion.div>
-=======
-                  {/* Mapping the backend variants to your UI format */}
-                  <GeneticProfilePanel variants={analysisResult.detected_variants.map((v: any) => ({
-                    gene: v.gene,
-                    diplotype: v.variant,
-                    phenotype: "Detected",
-                    activityScore: "N/A",
-                    clinicalSignificance: "Review",
-                    affectedDrugs: [analysisResult.drug]
-                  }))} />
-                  
-                  <AIClinicalExplanation
-                    explanation={analysisResult.llm_generated_explanation}
-                    recommendations={[analysisResult.clinical_recommendation]}
-                    references={["CPIC® Guidelines", "PharmGKB Database"]}
-                    modelVersion="PharmaGuard-Groq-v1"
-                  />
-                </div>
-
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </main>
-<<<<<<< HEAD
-
-      {/* Footer */}
-      <footer className="border-t border-[#E2E8F0]/60 bg-white/60 backdrop-blur-sm py-5 mt-auto">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[#94A3B8]" style={{ fontSize: "0.6875rem" }}>
-            © 2026 PharmaGuard. For clinical decision support only. Not a substitute for professional medical judgment.
-          </p>
-          <div className="flex items-center gap-5 text-[#94A3B8]" style={{ fontSize: "0.6875rem", fontWeight: 500 }}>
-            <span className="hover:text-[#64748B] cursor-pointer transition-colors">Privacy</span>
-            <span className="hover:text-[#64748B] cursor-pointer transition-colors">Terms</span>
-            <span className="hover:text-[#64748B] cursor-pointer transition-colors">Docs</span>
           </div>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }
-=======
-    </div>
-  );
-}
->>>>>>> 52b4931 (feat: implement full-stack JWT auth, MongoDB integration, and AI analysis engine)

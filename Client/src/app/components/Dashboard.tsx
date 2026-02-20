@@ -13,7 +13,7 @@ import {
   Microscope, ArrowRight, RotateCcw, ShieldCheck, Activity,
   FlaskConical, Dna, Sparkles,
 } from "lucide-react";
-import { Header } from "./Header";
+import { Header } from "./header";
 import { FileUpload } from "./FileUpload";
 import { DrugInput } from "./DrugInput";
 import { LoadingState } from "./LoadingState";

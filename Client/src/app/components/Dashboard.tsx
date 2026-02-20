@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 =======
@@ -157,7 +158,7 @@ export function Dashboard() {
         }
       };
 
-      const res = await axios.post('http://localhost:5000/api/analyze', formData, config);
+      const res = await axios.post(`${API_BASE_URL}/api/analyze`, formData, config);
       
       setProgress(100);
       setCurrentStep(3);

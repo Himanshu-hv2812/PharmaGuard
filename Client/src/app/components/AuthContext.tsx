@@ -1,4 +1,6 @@
 <<<<<<< HEAD
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
 interface User {
@@ -102,13 +104,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+    const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
     setUser(response.data);
     localStorage.setItem('pharmaguard_user', JSON.stringify(response.data));
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const response = await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, { name, email, password });
     setUser(response.data);
     localStorage.setItem('pharmaguard_user', JSON.stringify(response.data));
   };
